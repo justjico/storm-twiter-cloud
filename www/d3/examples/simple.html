@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="../lib/d3/d3.js"></script>
+<script src="../d3.layout.cloud.js"></script>
+<body>
+<script>
+  var fill = d3.scale.category20();
+
+  d3.json("http://ec2-54-224-197-87.compute-1.amazonaws.com/cloud.json",run);
+  setInterval( "getJson()", 10000 );
+  
+  function getJson(){ 
+    d3.json("http://ec2-54-224-197-87.compute-1.amazonaws.com/cloud.json",run);
+  }
+
+  function run(data){
+  d3.layout.cloud().size([500, 500])
+      .words(
+         data.map(function(d) {
+        return {text: d[0], size: parseInt(d[1])};
+      }))
+      .rotate(function() { return ~~(Math.random() * 2) * 90; })
+      .font("Impact")
+      .fontSize(function(d) { //return d.size;
+return d.size; })
+      .on("end", draw)
+      .start();
+}
+
+  function draw(words) {
+    d3.select("svg").remove();
+    d3.select("#canvas-container")
+        .append("svg")
+        .attr("width", 500)
+        .attr("height", 500)
+      .append("g")
+        .attr("transform", "translate(250,250)")
+      .selectAll("text")
+        .data(words)
+      .enter().append("text")
+        .style("font-size", function(d) { return d.size + "px"; })
+        .style("font-family", "Impact")
+        .style("text-align", "center")
+        .style("fill", function(d, i) { return fill(i); })
+        .attr("text-anchor", "middle")
+        .attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) { return d.text; });
+  }
+</script>
+<body>
+<div id="canvas-container">
+   <canvas>Your browser doesn't support canvas</canvas>
+</div>
+<body>
